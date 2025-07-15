@@ -57,6 +57,7 @@ var _ = ginkgo.Describe("Volume health check", func() {
 		isVsanHealthServiceStopped bool
 		isSPSServiceStopped        bool
 		csiNamespace               string
+		vsphereTKGSystemNamespace  string
 	)
 
 	ginkgo.BeforeEach(func() {
@@ -70,6 +71,7 @@ var _ = ginkgo.Describe("Volume health check", func() {
 		csiNamespace = GetAndExpectStringEnvVar(envCSINamespace)
 		nodeList, err := fnodes.GetReadySchedulableNodes(ctx, f.ClientSet)
 		datastoreURL = GetAndExpectStringEnvVar(envSharedDatastoreURL)
+		vsphereTKGSystemNamespace = GetAndExpectStringEnvVar(envVsphereTKGSystemNamespace)
 		framework.ExpectNoError(err, "Unable to find ready and schedulable Node")
 		if guestCluster {
 			svcClient, svNamespace := getSvcClientAndNamespace()
@@ -2123,7 +2125,6 @@ var _ = ginkgo.Describe("Volume health check", func() {
 			gcClient, err = createKubernetesClientFromConfig(k8senv)
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		}
-
 		tkgReplicaDeployment, err := svcClient.AppsV1().Deployments(vsphereTKGSystemNamespace).Get(ctx,
 			vsphereControllerManager, metav1.GetOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
