@@ -8164,3 +8164,21 @@ func genrateRandomString(length int) (string, error) {
 	generatedString = fmt.Sprintf("%x", b)[2 : length+2]
 	return generatedString, err
 }
+
+// getSvcConfigSecretData returns data obtained fom csi config secret
+// in namespace where CSI is deployed
+func getSvcConfigSecretData(client clientset.Interface, ctx context.Context,
+	csiNamespace string) (e2eTestConfig, error) {
+	var vsphereCfg e2eTestConfig
+	currentSecret, err := client.CoreV1().Secrets(csiNamespace).Get(ctx, configSecret, metav1.GetOptions{})
+	if err != nil {
+		return vsphereCfg, err
+	}
+	originalConf := string(currentSecret.Data[vsphereCloudProviderConfiguration])
+	vsphereCfg, err = readConfigFromSecretString(originalConf)
+	if err != nil {
+		return vsphereCfg, err
+	}
+
+	return vsphereCfg, nil
+}
