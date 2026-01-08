@@ -2773,9 +2773,11 @@ func verifyIsAttachedInSupervisor(ctx context.Context, f *framework.Framework,
 		gomega.Expect(instance).NotTo(gomega.BeNil())
 		for _, vol := range instance.Status.VolumeStatus {
 			if vol.Name == volumeHandle {
-				// Access the Attached field within the PVC status
-				volumeAttachmentStatus = vol.PersistentVolumeClaim.Attached
-				break
+				for _, cond := range vol.PersistentVolumeClaim.Conditions {
+					// Access the Status field within the PVC's Conditions
+					volumeAttachmentStatus = (cond.Status == metav1.ConditionTrue)
+					break
+				}
 			}
 		}
 		framework.Logf("instance attached found to be : %t\n", volumeAttachmentStatus)
@@ -2802,9 +2804,11 @@ func verifyIsDetachedInSupervisor(ctx context.Context, f *framework.Framework,
 		gomega.Expect(instance).NotTo(gomega.BeNil())
 		for _, vol := range instance.Status.VolumeStatus {
 			if vol.Name == volumeHandle {
-				// Access the Attached field within the PVC status
-				volumeAttachmentStatus = vol.PersistentVolumeClaim.Attached
-				break
+				for _, cond := range vol.PersistentVolumeClaim.Conditions {
+					// Access the Status field within the PVC's Conditions
+					volumeAttachmentStatus = (cond.Status == metav1.ConditionTrue)
+					break
+				}
 			}
 		}
 		framework.Logf("instance attached found to be : %t\n", volumeAttachmentStatus)
