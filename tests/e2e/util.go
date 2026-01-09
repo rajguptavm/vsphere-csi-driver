@@ -2774,9 +2774,11 @@ func verifyIsAttachedInSupervisor(ctx context.Context, f *framework.Framework,
 		for _, vol := range instance.Status.VolumeStatus {
 			if vol.Name == volumeHandle {
 				for _, cond := range vol.PersistentVolumeClaim.Conditions {
-					// Access the Status field within the PVC's Conditions
-					volumeAttachmentStatus = (cond.Status == metav1.ConditionTrue)
-					break
+					// Access the Status & Type field within the PVC's Conditions
+					if string(cond.Type) == "VolumeAttached" && cond.Status == metav1.ConditionTrue {
+						volumeAttachmentStatus = true
+						break
+					}
 				}
 			}
 		}
@@ -2802,12 +2804,16 @@ func verifyIsDetachedInSupervisor(ctx context.Context, f *framework.Framework,
 	if isBatchAttachSupported {
 		instance := getCnsNodeVMBatchAttachmentByName(ctx, f, nodeName, crdVersion, crdGroup)
 		gomega.Expect(instance).NotTo(gomega.BeNil())
-		for _, vol := range instance.Status.VolumeStatus {
-			if vol.Name == volumeHandle {
-				for _, cond := range vol.PersistentVolumeClaim.Conditions {
-					// Access the Status field within the PVC's Conditions
-					volumeAttachmentStatus = (cond.Status == metav1.ConditionTrue)
-					break
+		if instance.Status.VolumeStatus != nil {
+			for _, vol := range instance.Status.VolumeStatus {
+				if vol.Name == volumeHandle {
+					for _, cond := range vol.PersistentVolumeClaim.Conditions {
+						// Access the Status & Type field within the PVC's Conditions
+						if string(cond.Type) != "VolumeAttached" && cond.Status != metav1.ConditionTrue {
+							volumeAttachmentStatus = false
+							break
+						}
+					}
 				}
 			}
 		}
